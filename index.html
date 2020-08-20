@@ -1,80 +1,185 @@
 <!DOCTYPE html>
 <html>
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>Jogo da Velha</title>
 
-<head>
-  <title>Jogo da Velha</title>
-  <link type="text/css" rel='stylesheet' href='/css/style.css' />
-</head>
+    <link
+      rel="stylesheet"
+      href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css"
+      integrity="sha384-JcKb8q3iqJ61gNV9KGb8thSsNjpSL0n8PARn9HuZOnIxN0hoP+VmmDGMN5t9UJ0Z"
+      crossorigin="anonymous"
+    />
+    <script
+      src="https://code.jquery.com/jquery-3.5.1.slim.min.js"
+      integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj"
+      crossorigin="anonymous"
+    ></script>
+    <script
+      src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js"
+      integrity="sha384-9/reFTGAW83EW2RDu2S0VKaIzap3H66lZH81PoYlFhbGU+6BZp6G7niu735Sk7lN"
+      crossorigin="anonymous"
+    ></script>
+    <script
+      src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"
+      integrity="sha384-B4gt1jrGC7Jh4AgTPSdUtOBvfO8shuf57BaghqFfPlYxofvL8/KUEfYiJOMMV+rV"
+      crossorigin="anonymous"
+    ></script>
+    <link type="text/css" rel="stylesheet" href="/css/style.css" />
+  </head>
+  <header>
+    <nav class="navbar fixed-top navbar-expand-lg navbar-light bg-light">
+      <a class="navbar-brand" href="#">Trabalho de Poo Jogo da velha</a>
+      
+        
+      </button>
+      <div class="collapse navbar-collapse" id="navbarText">
+        <ul class="navbar-nav mr-auto">
+          <li class="nav-item active">
+            <a
+              class="nav-link"
+              href="https://github.com/lucasborgesdev/lucasborgesdev/blob/master/README.md"
+              >Meu GitHub
+            </a>
+          </li>
+          <li class="nav-item active">
+            <a
+              class="nav-link"
+              href="#"
+              
+              >Repositório</a
+            >
+          </li>
+          <li class="nav-item active">
+            <a
+              class="nav-link"
+              href="#"
+              data-toggle="modal"
+              data-target="#staticBackdrop"
+              >
+              Sobre o Jogo
+              </a
+            >
+          </li>
+        </ul>
+        <span class="navbar-text">
+          <a href="http://www.camboriu.ifc.edu.br/">
+            <img src="/imagens/indice.png" class="iconLateral" alt="" />
+          </a>
+        </span>
+      </div>
+    </nav>
+  </header>
 
-<body>
+  <body>
+    <canvas id="canvas"></canvas>
+    <div id="result"></div>
+    <button id="btn-newgame" class="btn-game">Novo Jogo</button>
+    <button id="btn-scoreboard" class="btn-game">Placar</button>
+    <button id="btn-reset-scoreboard" class="btn-game">Zerar Placar</button>
 
-  <canvas id="canvas"></canvas>
-  <div id="result"></div>
-  <button id="btn-newgame" class="btn-game">Novo Jogo</button>
-  <button id="btn-scoreboard" class="btn-game">Placar</button>
-  <button id="btn-reset-scoreboard" class="btn-game">Zerar Placar</button>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+    <script type="text/javascript" src="/socket.io/socket.io.js"></script>
+    <script src="/js/game.js"></script>
+    <script>
+      var game = new TicTacToe();
 
-  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
-  <script type="text/javascript" src="/socket.io/socket.io.js"></script>
-  <script src="/js/game.js"></script>
-  <script>
-    var game = new TicTacToe();
+      var socket = io.connect();
 
-    var socket = io.connect();
+      //-------------------------------------------------------
 
-    //-------------------------------------------------------
+      $("#canvas").on("click", function () {
+        socket.emit("nova jogada", game.newPlay());
+      });
 
-    $("#canvas").on("click", function () {
-      socket.emit("nova jogada", game.newPlay());
-    });
+      socket.on("nova jogada", function (params) {
+        game.renderSymbol(params.row, params.col);
 
-    socket.on("nova jogada", function (params) {
-      game.renderSymbol(params.row, params.col);
+        if (game.status == "vitoria") {
+          socket.emit("vitoria", {
+            name: game.currentPlayer.name,
+            points: 10,
+          });
+        }
 
-      if (game.status == "vitoria") {
-        socket.emit("vitoria", {
-          name: game.currentPlayer.name,
-          points: 10
-        });
-      }
+        if (game.status != "empate") {
+          game.changePlayer();
+        }
+      });
 
-      if (game.status != "empate") {
-        game.changePlayer();
-      }
+      // -------------------------------------------------------
 
-    });
+      $("#btn-newgame").on("click", function () {
+        socket.emit("novo jogo");
+      });
 
-    // -------------------------------------------------------
+      socket.on("novo jogo", function (params) {
+        game.newGame();
+      });
 
-    $("#btn-newgame").on("click", function () {
-      socket.emit("novo jogo");
-    });
+      //-------------------------------------------------------
 
-    socket.on("novo jogo", function (params) {
-      game.newGame();
-    });
+      $("#btn-scoreboard").on("click", function () {
+        socket.emit("exibir placar");
+      });
 
-    //-------------------------------------------------------
+      socket.on("exibir placar", function (score) {
+        game.showScoreboard(score);
+      });
 
-    $("#btn-scoreboard").on("click", function () {
-      socket.emit("exibir placar");
-    });
+      //-------------------------------------------------------
 
-    socket.on("exibir placar", function (score) {
-      game.showScoreboard(score);
-    });
+      $("#btn-reset-scoreboard").on("click", function () {
+        socket.emit("zerar placar");
+      });
 
-    //-------------------------------------------------------
-
-    $("#btn-reset-scoreboard").on("click", function () {
-      socket.emit("zerar placar");
-    });
-
-    socket.on("zerar placar", function (score) {
-      game.showScoreboard(null);
-    });
-
-  </script>
-</body>
-
+      socket.on("zerar placar", function (score) {
+        game.showScoreboard(null);
+      });
+    </script>
+    <div
+      class="modal fade"
+      id="staticBackdrop"
+      data-backdrop="static"
+      data-keyboard="false"
+      tabindex="-1"
+      aria-labelledby="staticBackdropLabel"
+      aria-hidden="true"
+    >
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="staticBackdropLabel">Jogo da velha</h5>
+            <button
+              type="button"
+              class="close"
+              data-dismiss="modal"
+              aria-label="Close"
+            >
+              <span aria-hidden="true">&times;</span>
+            </button>
+          </div>
+          <div class="modal-body">
+          <p>
+              O jogo da velha (português brasileiro) ou jogo do galo (português europeu) ou três em linha é um jogo e/ou passatempo popular.<br/> É um jogo de regras extremamente simples, que não traz grandes dificuldades para seus jogadores e é facilmente aprendido.<br/> A origem é desconhecida, com indicações de que pode ter começado no antigo Egito, onde foram encontrados tabuleiros esculpidos na rocha, que teriam mais de 3.500 anos.<br/>
+         </p>
+          <p>
+              <br/>Algumas lendas urbanas contam que o jogo terá nascido em Portugal, na cidade de Almada no ano 545.<br/> No entanto, só foi popularizado no ano 1500, pelo descobridor Pedro Álvares Cabral, que adorava jogar este jogo durante as suas viagens.<br/> Álvares Cabral terá decidido que este jogo seria o primeiro a ser ensinado ao povo indígena no Brasil. 
+          </p>
+          <a href="https://pt.wikipedia.org/wiki/Jogo_da_velha">Fonte.</a>
+          </div>
+          <div class="modal-footer">
+            <button
+              type="button"
+              class="btn btn-secondary"
+              data-dismiss="modal"
+            >
+              Fechar
+            </button>
+            
+          </div>
+        </div>
+      </div>
+    </div>
+  </body>
 </html>
