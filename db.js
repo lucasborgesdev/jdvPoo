@@ -10,9 +10,12 @@ mongoClient.connect('mongodb://localhost:27017/game', { useNewUrlParser: true })
  */
 
 mongoClient
-  .connect(process.env.MONGO_URL, {
-    useNewUrlParser: true,
-  })
+  .connect(
+    `mongodb+srv://deploy:deploy@cluster0.cm4w6.mongodb.net/<dbname>?retryWrites=true&w=majority`,
+    {
+      useNewUrlParser: true,
+    }
+  )
   .then((conn) => {
     gameDb = conn.db("game");
   })
