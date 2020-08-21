@@ -11,7 +11,7 @@ app.listen(process.env.PORT || 3000); // Especifica a porta que vai escutar as r
 
 function callback(req, res) {
   // Nome do arquivo
-  var filename = req.url == "/" ? "index.html" : __dirname + req.url;
+  var filename = (req.url = "/" ? "index.html" : __dirname + req.url);
 
   fs.readFile(filename, function (err, data) {
     if (err) {
