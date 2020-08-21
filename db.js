@@ -11,7 +11,7 @@ mongoClient.connect('mongodb://localhost:27017/game', { useNewUrlParser: true })
 
 mongoClient
   .connect(
-    `mongodb+srv://deploy:deploy@cluster0.cm4w6.mongodb.net/<dbname>?retryWrites=true&w=majority`,
+    `mongodb+srv://deploy:deploy@cluster0.cm4w6.mongodb.net/dbJdv?retryWrites=true&w=majority`,
     {
       useNewUrlParser: true,
     }
